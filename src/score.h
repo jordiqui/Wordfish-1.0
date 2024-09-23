@@ -16,36 +16,55 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <iostream>
+#ifndef SCORE_H_INCLUDED
+#define SCORE_H_INCLUDED
 
-#include "bitboard.h"
-#include "misc.h"
-#include "position.h"
-#include "tune.h"
+#include <variant>
+#include <utility>
+
 #include "types.h"
-#include "uci.h"
 
-using namespace Stockfish;
+namespace Stockfish {
 
-int main(int argc, char* argv[]) {
+class Position;
 
-    Cluster::init();
+class Score {
+   public:
+    struct Mate {
+        int plies;
+    };
 
-    if (Cluster::is_root())
-        std::cout << engine_info() << std::endl;
+    struct Tablebase {
+        int  plies;
+        bool win;
+    };
 
-    Bitboards::init();
-    Position::init();
+    struct InternalUnits {
+        int value;
+    };
 
-    {
-        UCIEngine uci(argc, argv);
+    Score() = default;
+    Score(Value v, const Position& pos);
 
-        Tune::init(uci.engine_options());
-
-        uci.loop();
+    template<typename T>
+    bool is() const {
+        return std::holds_alternative<T>(score);
     }
 
-    Cluster::finalize();
+    template<typename T>
+    T get() const {
+        return std::get<T>(score);
+    }
 
-    return 0;
+    template<typename F>
+    decltype(auto) visit(F&& f) const {
+        return std::visit(std::forward<F>(f), score);
+    }
+
+   private:
+    std::variant<Mate, Tablebase, InternalUnits> score;
+};
+
 }
+
+#endif  // #ifndef SCORE_H_INCLUDED
