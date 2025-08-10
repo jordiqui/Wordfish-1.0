@@ -1,13 +1,13 @@
 /*
-  Stockfish, a UCI chess playing engine derived from Glaurung 2.1
-  Copyright (C) 2004-2025 The Stockfish developers (see AUTHORS file)
+  Wordfish, a UCI chess playing engine derived from Glaurung 2.1
+  Copyright (C) 2004-2025 The Wordfish developers (see AUTHORS file)
 
-  Stockfish is free software: you can redistribute it and/or modify
+  Wordfish is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
 
-  Stockfish is distributed in the hope that it will be useful,
+  Wordfish is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   GNU General Public License for more details.
@@ -40,7 +40,7 @@ namespace Stockfish {
 namespace {
 
 // Version number or dev.
-constexpr std::string_view version = "dev";
+constexpr std::string_view version = "100825";
 
 // Our fancy logging facility. The trick here is to replace cin.rdbuf() and
 // cout.rdbuf() with two Tie objects that tie cin and cout to a file stream. We
@@ -113,20 +113,20 @@ class Logger {
 }  // namespace
 
 
-// Returns the full name of the current Stockfish version.
+// Returns the full name of the current Wordfish version.
 //
 // For local dev compiles we try to append the commit SHA and
 // commit date from git. If that fails only the local compilation
 // date is set and "nogit" is specified:
-//      Stockfish dev-YYYYMMDD-SHA
+//      Wordfish dev-YYYYMMDD-SHA
 //      or
-//      Stockfish dev-YYYYMMDD-nogit
+//      Wordfish dev-YYYYMMDD-nogit
 //
 // For releases (non-dev builds) we only include the version number:
-//      Stockfish version
+//      Wordfish version
 std::string engine_version_info() {
     std::stringstream ss;
-    ss << "Stockfish " << version << std::setfill('0');
+    ss << "Wordfish " << version << std::setfill('0');
 
     if constexpr (version == "dev")
     {
@@ -157,8 +157,9 @@ std::string engine_version_info() {
 }
 
 std::string engine_info(bool to_uci) {
+	const std::string name = "Wordfish";
     return engine_version_info() + (to_uci ? "\nid author " : " by ")
-         + "the Stockfish developers (see AUTHORS file)";
+         + "Jorge Ruiz and the Wordfish developers (see AUTHORS file)";
 }
 
 
@@ -236,7 +237,7 @@ std::string compiler_info() {
 #endif
 
     compiler += "\nCompilation settings       : ";
-    compiler += (Is64Bit ? "64bit" : "32bit");
+    compiler += (Stockfish::Is64Bit ? "64bit" : "32bit");
 #if defined(USE_AVX512ICL)
     compiler += " AVX512ICL";
 #endif
@@ -246,7 +247,7 @@ std::string compiler_info() {
 #if defined(USE_AVX512)
     compiler += " AVX512";
 #endif
-    compiler += (HasPext ? " BMI2" : "");
+    compiler += (Stockfish::HasPext ? " BMI2" : "");
 #if defined(USE_AVX2)
     compiler += " AVX2";
 #endif
@@ -259,7 +260,7 @@ std::string compiler_info() {
 #if defined(USE_SSE2)
     compiler += " SSE2";
 #endif
-    compiler += (HasPopCnt ? " POPCNT" : "");
+    compiler += (Stockfish::HasPopCnt ? " POPCNT" : "");
 #if defined(USE_NEON_DOTPROD)
     compiler += " NEON_DOTPROD";
 #elif defined(USE_NEON)

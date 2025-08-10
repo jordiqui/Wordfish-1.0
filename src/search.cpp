@@ -41,6 +41,7 @@
 #include "movepick.h"
 #include "nnue/network.h"
 #include "nnue/nnue_accumulator.h"
+#include "polybook.h"
 #include "position.h"
 #include "syzygy/tbprobe.h"
 #include "thread.h"
@@ -129,7 +130,8 @@ void update_all_stats(const Position& pos,
                       SearchedList&   quietsSearched,
                       SearchedList&   capturesSearched,
                       Depth           depth,
-                      Move            TTMove);
+                      Move            TTMove,
+                      int             moveCount);
 
 }  // namespace
 
@@ -170,6 +172,8 @@ void Search::Worker::start_searching() {
                             main_manager()->originalTimeAdjust);
     tt.new_search();
 
+    Move bookMove = Move::none();
+
     if (rootMoves.empty())
     {
         rootMoves.emplace_back(Move::none());
@@ -178,8 +182,33 @@ void Search::Worker::start_searching() {
     }
     else
     {
-        threads.start_searching();  // start non-main threads
-        iterative_deepening();      // main thread start searching
+        if (!limits.infinite && !limits.mate)
+        {
+if ((bool) options["Book1"] && rootPos.game_ply() / 2 < (int) options["Book1 Depth"])
+    bookMove = polybook[0].probe(rootPos,
+                                 (bool) options["Book1 BestBookMove"],
+                                 (int) options["Book1 Width"]);
+
+if (bookMove == Move::none() && (bool) options["Book2"]
+    && rootPos.game_ply() / 2 < (int) options["Book2 Depth"])
+    bookMove = polybook[1].probe(rootPos,
+                                 (bool) options["Book2 BestBookMove"],
+                                 (int) options["Book2 Width"]);
+        }
+
+        if (bookMove != Move::none()
+            && std::find(rootMoves.begin(), rootMoves.end(), bookMove) != rootMoves.end())
+        {
+            for (auto&& th : threads)
+                std::swap(th->worker.get()->rootMoves[0],
+                          *std::find(th->worker.get()->rootMoves.begin(),
+                                     th->worker.get()->rootMoves.end(), bookMove));
+        }
+        else
+        {
+            threads.start_searching();  // start non-main threads
+            iterative_deepening();      // main thread start searching
+        }
     }
 
     // When we reach the maximum depth, we can arrive here without a raise of
@@ -1040,10 +1069,9 @@ moves_loop:  // When in check, search starts here
                 // Futility pruning for captures
                 if (!givesCheck && lmrDepth < 7 && !ss->inCheck)
                 {
-
-                    Value futilityValue = ss->staticEval + 232 + 224 * lmrDepth
-                                        + PieceValue[capturedPiece] + 131 * captHist / 1024;
-
+                    Value futilityValue = ss->staticEval + 225 + 220 * lmrDepth
+                                        + 275 * (move.to_sq() == prevSq) + PieceValue[capturedPiece]
+                                        + 131 * captHist / 1024;
                     if (futilityValue <= alpha)
                         continue;
                 }
@@ -1401,7 +1429,7 @@ moves_loop:  // When in check, search starts here
     else if (bestMove)
     {
         update_all_stats(pos, ss, *this, bestMove, prevSq, quietsSearched, capturesSearched, depth,
-                         ttData.move);
+                         ttData.move, moveCount);
         if (!PvNode)
             ttMoveHistory << (bestMove == ttData.move ? 811 : -848);
     }
@@ -1812,44 +1840,42 @@ void update_all_stats(const Position& pos,
                       SearchedList&   quietsSearched,
                       SearchedList&   capturesSearched,
                       Depth           depth,
-                      Move            ttMove) {
+                      Move            ttMove,
+                      int             moveCount) {
 
     CapturePieceToHistory& captureHistory = workerThread.captureHistory;
     Piece                  movedPiece     = pos.moved_piece(bestMove);
     PieceType              capturedPiece;
 
-    int quietBonus   = std::min(170 * depth - 87, 1598) + 332 * (bestMove == ttMove);
-    int quietMalus   = std::min(743 * depth - 180, 2287) - 33 * quietsSearched.size();
-    int captureBonus = std::min(124 * depth - 62, 1245) + 336 * (bestMove == ttMove);
-    int captureMalus = std::min(708 * depth - 148, 2287) - 29 * capturesSearched.size();
+    int bonus = std::min(142 * depth - 88, 1501) + 318 * (bestMove == ttMove);
+    int malus = std::min(757 * depth - 172, 2848) - 30 * moveCount;
 
     if (!pos.capture_stage(bestMove))
     {
-        update_quiet_histories(pos, ss, workerThread, bestMove, quietBonus * 978 / 1024);
+        update_quiet_histories(pos, ss, workerThread, bestMove, bonus * 1054 / 1024);
 
         // Decrease stats for all non-best quiet moves
         for (Move move : quietsSearched)
-            update_quiet_histories(pos, ss, workerThread, move, -quietMalus * 1115 / 1024);
+            update_quiet_histories(pos, ss, workerThread, move, -malus * 1388 / 1024);
     }
     else
     {
         // Increase stats for the best move in case it was a capture move
         capturedPiece = type_of(pos.piece_on(bestMove.to_sq()));
-        captureHistory[movedPiece][bestMove.to_sq()][capturedPiece] << captureBonus * 1288 / 1024;
+        captureHistory[movedPiece][bestMove.to_sq()][capturedPiece] << bonus * 1235 / 1024;
     }
 
     // Extra penalty for a quiet early move that was not a TT move in
     // previous ply when it gets refuted.
     if (prevSq != SQ_NONE && ((ss - 1)->moveCount == 1 + (ss - 1)->ttHit) && !pos.captured_piece())
-        update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq,
-                                      -captureMalus * 622 / 1024);
+        update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq, -malus * 595 / 1024);
 
     // Decrease stats for all non-best capture moves
     for (Move move : capturesSearched)
     {
         movedPiece    = pos.moved_piece(move);
         capturedPiece = type_of(pos.piece_on(move.to_sq()));
-        captureHistory[movedPiece][move.to_sq()][capturedPiece] << -captureMalus * 1431 / 1024;
+        captureHistory[movedPiece][move.to_sq()][capturedPiece] << -malus * 1354 / 1024;
     }
 }
 

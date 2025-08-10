@@ -17,6 +17,7 @@
 */
 
 #include <iostream>
+#include <ctime>
 
 #include "bitboard.h"
 #include "misc.h"
@@ -25,12 +26,14 @@
 #include "uci.h"
 #include "tune.h"
 
-using namespace Stockfish;
+using namespace Stockfish;  // Cambiado a Stockfish
 
 int main(int argc, char* argv[]) {
-
-    std::cout << engine_info() << std::endl;
-
+	
+    // Mensaje personalizado con autor
+    std::cout << "Wordfish 100825" << __DATE__ << " " << __TIME__ << " by Jorge Ruiz" << std::endl;
+    std::cout << compiler_info() << std::endl;
+    
     Bitboards::init();
     Position::init();
 

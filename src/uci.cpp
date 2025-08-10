@@ -434,11 +434,9 @@ void UCIEngine::benchmark(std::istream& args) {
     // clang-format off
 
     std::cerr << "==========================="
-              << "\nVersion                    : "
-              << engine_version_info()
-              // "\nCompiled by                : "
-              << compiler_info()
-              << "Large pages                : " << (has_large_pages() ? "yes" : "no")
+              << "\nVersion                    : Wordfish 090825" << __DATE__ << " " << __TIME__
+			  << compiler_info()
+              << "Large pages                  : " << (has_large_pages() ? "yes" : "no")
               << "\nUser invocation            : " << BenchmarkCommand << " "
               << setup.originalInvocation << "\nFilled invocation          : " << BenchmarkCommand
               << " " << setup.filledInvocation
