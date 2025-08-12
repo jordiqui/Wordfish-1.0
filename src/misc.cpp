@@ -114,54 +114,14 @@ class Logger {
 
 
 // Returns the full name of the current Wordfish version.
-//
-// For local dev compiles we try to append the commit SHA and
-// commit date from git. If that fails only the local compilation
-// date is set and "nogit" is specified:
-//      Wordfish dev-YYYYMMDD-SHA
-//      or
-//      Wordfish dev-YYYYMMDD-nogit
-//
-// For releases (non-dev builds) we only include the version number:
-//      Wordfish version
 std::string engine_version_info() {
-    std::stringstream ss;
-    ss << "Wordfish " << version << std::setfill('0');
-
-    if constexpr (version == "dev")
-    {
-        ss << "-";
-#ifdef GIT_DATE
-        ss << stringify(GIT_DATE);
-#else
-        constexpr std::string_view months("Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec");
-
-        std::string       month, day, year;
-        std::stringstream date(__DATE__);  // From compiler, format is "Sep 21 2008"
-
-        date >> month >> day >> year;
-        ss << year << std::setw(2) << std::setfill('0') << (1 + months.find(month) / 4)
-           << std::setw(2) << std::setfill('0') << day;
-#endif
-
-        ss << "-";
-
-#ifdef GIT_SHA
-        ss << stringify(GIT_SHA);
-#else
-        ss << "nogit";
-#endif
-    }
-
-    return ss.str();
+    return "Wordfish 1.0 120825";
 }
 
+// Update author information
 std::string engine_info(bool to_uci) {
-	const std::string name = "Wordfish";
-    return engine_version_info() + (to_uci ? "\nid author " : " by ")
-         + "Jorge Ruiz and the Wordfish developers (see AUTHORS file)";
+    return engine_version_info() + (to_uci ? "\nid author " : " by ") + "Jorge Ruiz";
 }
-
 
 // Returns a string trying to describe the compiler we use
 std::string compiler_info() {
@@ -417,17 +377,17 @@ std::ostream& operator<<(std::ostream& os, SyncCout sc) {
 
     static std::mutex m;
 
-    if (sc == IO_LOCK)
+    if (sc == Stockfish::IO_LOCK)
         m.lock();
 
-    if (sc == IO_UNLOCK)
+    if (sc == Stockfish::IO_UNLOCK)
         m.unlock();
 
     return os;
 }
 
-void sync_cout_start() { std::cout << IO_LOCK; }
-void sync_cout_end() { std::cout << IO_UNLOCK; }
+void sync_cout_start() { std::cout << Stockfish::IO_LOCK; }
+void sync_cout_end() { std::cout << Stockfish::IO_UNLOCK; }
 
 // Trampoline helper to avoid moving Logger to misc.h
 void start_logger(const std::string& fname) { Logger::start(fname); }
