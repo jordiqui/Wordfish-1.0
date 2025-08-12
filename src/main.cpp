@@ -26,12 +26,12 @@
 #include "uci.h"
 #include "tune.h"
 
-using namespace Stockfish;  // Cambiado a Stockfish
+using namespace Stockfish;
 
 int main(int argc, char* argv[]) {
 	
     // Mensaje personalizado con autor
-    std::cout << "Wordfish 100825" << __DATE__ << " " << __TIME__ << " by Jorge Ruiz" << std::endl;
+    std::cout << "Wordfish 1.0 120825 " << __DATE__ << " " << __TIME__ << " by Jorge Ruiz" << std::endl;
     std::cout << compiler_info() << std::endl;
     
     Bitboards::init();
