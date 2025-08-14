@@ -62,7 +62,7 @@ Technical discussions occur primarily through:
 Compile from source using included Makefiles:
 ```bash
 cd src
-make -j ARCH=x86-64-modern
+make -j profile-build
 ```
 
 Supported architectures:
@@ -92,12 +92,7 @@ Wordfish incorporates:
 - Positional analysis concepts from [CPW research][cpw-link]
 
 [gpl-link]: https://www.gnu.org/licenses/gpl-3.0.html
-[doc-link]: #
-[discord-link]: #
-[openbench-link]: #
-[worker-link]: #
-[testsuite-link]: #
-[discussions-link]: #
+[website-link]: https://ijccrl.com/ 
 [chesswiki-link]: https://www.chessprogramming.org
 [lichess-db]: https://database.lichess.org
 [ccc-link]: https://www.chess.com/computer-chess-championship
