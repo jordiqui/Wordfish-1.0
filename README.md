@@ -6,7 +6,7 @@
   
   A free and open-source UCI chess engine combining classical algorithms with neural network innovations.
   <br>
-  <strong><a href="#">Explore Wordfish Documentation »</a>
+  <strong><a href="https://ijccrl.com/code-changes-in-wordfish-1-0/">Explore Wordfish Documentation »</a>
   
 </div>
 
