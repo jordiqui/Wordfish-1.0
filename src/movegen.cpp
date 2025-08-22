@@ -22,7 +22,7 @@
 #include "movegen.h"
 #include "position.h"
 
-/// Simple macro to wrap a very common while loop, no facny, no flexibility,
+/// Simple macro to wrap a very common while loop, no fancy, no flexibility,
 /// hardcoded names 'mlist' and 'from'.
 #define SERIALIZE(b) while (b) (*mlist++).move = make_move(from, pop_lsb(&b))
 
