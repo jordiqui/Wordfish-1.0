@@ -75,7 +75,9 @@ void* std_aligned_alloc(size_t alignment, size_t size) {
     return aligned_alloc(alignment, size);
 #elif defined(POSIXALIGNEDALLOC)
     void* mem = nullptr;
-    posix_memalign(&mem, alignment, size);
+    int err = posix_memalign(&mem, alignment, size);
+    if (err != 0)
+        return nullptr;
     return mem;
 #elif defined(_WIN32) && !defined(_M_ARM) && !defined(_M_ARM64)
     return _mm_malloc(size, alignment);
