@@ -37,6 +37,7 @@
 #include "perft.h"
 #include "polybook.h"
 #include "position.h"
+#include "experience.h"
 #include "search.h"
 #include "syzygy/tbprobe.h"
 #include "types.h"
@@ -154,6 +155,12 @@ Engine::Engine(std::optional<std::string> path) :
     options.add("Book2 Depth", Option(255, 1, 350));
 
     options.add("Book2 Width", Option(1, 1, 10));
+
+    options.add("Experience", Option(false));
+    options.add("Experience File", Option("experience.exp", [](const Option& o) {
+        Experience::init(o);
+        return std::nullopt;
+    }));
 
     options.add(  //
       "EvalFile", Option(EvalFileDefaultNameBig, [this](const Option& o) {

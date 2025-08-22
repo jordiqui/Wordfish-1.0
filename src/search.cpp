@@ -43,6 +43,7 @@
 #include "nnue/nnue_accumulator.h"
 #include "polybook.h"
 #include "position.h"
+#include "experience.h"
 #include "syzygy/tbprobe.h"
 #include "thread.h"
 #include "timeman.h"
@@ -173,6 +174,8 @@ void Search::Worker::start_searching() {
     tt.new_search();
 
     Move bookMove = Move::none();
+    Move expMove  = Move::none();
+    bool searched = false;
 
     if (rootMoves.empty())
     {
@@ -196,18 +199,25 @@ if (bookMove == Move::none() && (bool) options["Book2"]
                                  (int) options["Book2 Width"]);
         }
 
-        if (bookMove != Move::none()
-            && std::find(rootMoves.begin(), rootMoves.end(), bookMove) != rootMoves.end())
+        if ((bool) options["Experience"])
+            if (auto e = Experience::probe(rootPos))
+                expMove = e->move;
+
+        Move forced = bookMove != Move::none() ? bookMove : expMove;
+
+        if (forced != Move::none()
+            && std::find(rootMoves.begin(), rootMoves.end(), forced) != rootMoves.end())
         {
             for (auto&& th : threads)
                 std::swap(th->worker.get()->rootMoves[0],
                           *std::find(th->worker.get()->rootMoves.begin(),
-                                     th->worker.get()->rootMoves.end(), bookMove));
+                                     th->worker.get()->rootMoves.end(), forced));
         }
         else
         {
             threads.start_searching();  // start non-main threads
             iterative_deepening();      // main thread start searching
+            searched = true;
         }
     }
 
@@ -254,6 +264,13 @@ if (bookMove == Move::none() && (bool) options["Book2"]
         ponder = UCIEngine::move(bestThread->rootMoves[0].pv[1], rootPos.is_chess960());
 
     auto bestmove = UCIEngine::move(bestThread->rootMoves[0].pv[0], rootPos.is_chess960());
+
+    if (searched && (bool) options["Experience"])
+    {
+        Experience::update(rootPos, bestThread->rootMoves[0].pv[0], bestThread->rootMoves[0].score);
+        Experience::save();
+    }
+
     main_manager()->updates.onBestmove(bestmove, ponder);
 }
 

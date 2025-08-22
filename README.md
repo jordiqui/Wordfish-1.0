@@ -36,6 +36,14 @@ The distribution includes:
 - `src/` (source code with platform-specific Makefiles)
 - Neural network weights (`wordfish.nnue`)
 
+### Experience
+
+Wordfish puede almacenar conocimiento sobre posiciones en un archivo de
+experiencia. Active esta funcionalidad con la opción UCI `Experience` y
+configure la ruta del archivo mediante `Experience File` (por defecto
+`experience.exp`). El motor cargará las entradas al iniciar y guardará
+las nuevas evaluaciones al finalizar cada búsqueda.
+
 ## Contributing
 
 ### Development Guidelines
