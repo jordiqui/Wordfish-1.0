@@ -121,21 +121,37 @@ static void* aligned_large_pages_alloc_windows([[maybe_unused]] size_t allocSize
 
     // Dynamically link OpenProcessToken, LookupPrivilegeValue and AdjustTokenPrivileges
 
-    HMODULE hAdvapi32 = GetModuleHandle(TEXT("advapi32.dll"));
+    struct Advapi32Guard {
+        HMODULE hModule{};
+        bool    loaded{};
 
-    if (!hAdvapi32)
-        hAdvapi32 = LoadLibrary(TEXT("advapi32.dll"));
+        Advapi32Guard() {
+            hModule = GetModuleHandle(TEXT("advapi32.dll"));
+            if (!hModule) {
+                hModule = LoadLibrary(TEXT("advapi32.dll"));
+                loaded  = (hModule != nullptr);
+            }
+        }
+
+        ~Advapi32Guard() {
+            if (loaded && hModule)
+                FreeLibrary(hModule);
+        }
+    } advapi32;
+
+    if (!advapi32.hModule)
+        return nullptr;
 
     auto OpenProcessToken_f =
-      OpenProcessToken_t((void (*)()) GetProcAddress(hAdvapi32, "OpenProcessToken"));
+      OpenProcessToken_t((void (*)()) GetProcAddress(advapi32.hModule, "OpenProcessToken"));
     if (!OpenProcessToken_f)
         return nullptr;
     auto LookupPrivilegeValueA_f =
-      LookupPrivilegeValueA_t((void (*)()) GetProcAddress(hAdvapi32, "LookupPrivilegeValueA"));
+      LookupPrivilegeValueA_t((void (*)()) GetProcAddress(advapi32.hModule, "LookupPrivilegeValueA"));
     if (!LookupPrivilegeValueA_f)
         return nullptr;
     auto AdjustTokenPrivileges_f =
-      AdjustTokenPrivileges_t((void (*)()) GetProcAddress(hAdvapi32, "AdjustTokenPrivileges"));
+      AdjustTokenPrivileges_t((void (*)()) GetProcAddress(advapi32.hModule, "AdjustTokenPrivileges"));
     if (!AdjustTokenPrivileges_f)
         return nullptr;
 
