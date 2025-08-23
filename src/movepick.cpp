@@ -258,6 +258,7 @@ void MovePicker::generate_next() {
 
   case EVASION: case QSEARCH_0: case QSEARCH_1: case PROBCUT: case RECAPTURE:
       phase = STOP;
+      /* fall through */
   case STOP:
       end = cur + 1; // Avoid another next_phase() call
       return;
