@@ -114,8 +114,10 @@ void UCIEngine::loop() {
 
         else if (token == "uci")
         {
-            sync_cout << "id name " << engine_info(true) << "\n"
-                      << engine.get_options() << sync_endl;
+            // Force a stable, explicit UCI name so GUIs show "Wordfish 1.0.1 dev <date>"
+            sync_cout << "id name " << ENGINE_NAME << ' ' << ENGINE_BUILD_DATE << "\n"
+                << "id author Jorge Ruiz" << "\n"
+                << engine.get_options() << sync_endl;
 
             sync_cout << "uciok" << sync_endl;
         }
@@ -434,8 +436,8 @@ void UCIEngine::benchmark(std::istream& args) {
     // clang-format off
 
     std::cerr << "==========================="
-              << "\nVersion                    : Wordfish 090825" << __DATE__ << " " << __TIME__
-			  << compiler_info()
+              << "\nVersion                    :   << ENGINE_NAME << " << __DATE__ << " " << __TIME__
+              << compiler_info()
               << "Large pages                  : " << (has_large_pages() ? "yes" : "no")
               << "\nUser invocation            : " << BenchmarkCommand << " "
               << setup.originalInvocation << "\nFilled invocation          : " << BenchmarkCommand

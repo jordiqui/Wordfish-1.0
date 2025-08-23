@@ -17,6 +17,14 @@
 */
 
 #include "ucioption.h"
+// --- Engine identity (fallbacks; Makefile can override) ---
+#ifndef ENGINE_NAME
+#define ENGINE_NAME "Wordfish 1.0.1 dev"
+#endif
+#ifndef ENGINE_BUILD_DATE
+#define ENGINE_BUILD_DATE "250822"  // yymmdd; overridden by Makefile if provided
+#endif
+
 
 #include <algorithm>
 #include <cassert>

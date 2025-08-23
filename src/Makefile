@@ -838,6 +838,17 @@ ifneq ($(ARCH), )
 	CXXFLAGS += -DARCH=$(ARCH)
 endif
 
+### 3.8.4 Engine identity (UCI id name / build date)
+# UCI "id name" string shown in GUIs.
+# Defaults:
+#   - ENGINE_NAME: "Wordfish 1.0.1 dev"
+#   - ENGINE_BUILD_DATE: system date in yymmdd format
+# You can override on the command line:
+#   make ENGINE_NAME="Wordfish 1.0.2 beta" ENGINE_BUILD_DATE=251001
+ENGINE_NAME        ?= Wordfish 1.0.1 dev
+ENGINE_BUILD_DATE  ?= $(shell date +%y%m%d)
+CXXFLAGS += -DENGINE_NAME='"$(ENGINE_NAME)"' -DENGINE_BUILD_DATE='"$(ENGINE_BUILD_DATE)"'
+
 ### 3.9 Link Time Optimization
 ### This is a mix of compile and link time options because the lto link phase
 ### needs access to the optimization flags.

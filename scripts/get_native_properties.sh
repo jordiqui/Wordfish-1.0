@@ -133,10 +133,16 @@ case $uname_s in
     file_ext='tar'
     ;;
   'MINGW'*'ARM64'*) # Windows ARM64 system with POSIX compatibility layer
-    # TODO: older chips might be armv8, but we have no good way to detect, /proc/cpuinfo shows x86 info
     file_os='windows'
-    true_arch='armv8-dotprod'
     file_ext='zip'
+    true_arch='armv8'
+    if command -v wmic >/dev/null 2>&1; then
+      wmic_cpu=$(wmic cpu get /format:list 2>/dev/null)
+      printf '%s\n' "$wmic_cpu" | grep -qi 'asimddp\|dotprod' && true_arch='armv8-dotprod'
+    elif command -v reg >/dev/null 2>&1; then
+      reg_output=$(reg query 'HKLM\\HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0' 2>/dev/null)
+      printf '%s\n' "$reg_output" | grep -qi 'asimddp\|dotprod' && true_arch='armv8-dotprod'
+    fi
     ;;
   'CYGWIN'*|'MINGW'*|'MSYS'*) # Windows x86_64system with POSIX compatibility layer
     get_flags
