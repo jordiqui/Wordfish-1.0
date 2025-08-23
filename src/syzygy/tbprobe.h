@@ -64,6 +64,7 @@ extern int MaxCardinality;
 
 
 void     init(const std::string& paths);
+void     release();
 WDLScore probe_wdl(Position& pos, ProbeState* result);
 int      probe_dtz(Position& pos, ProbeState* result);
 bool     root_probe(Position& pos, Search::RootMoves& rootMoves, bool rule50, bool rankDTZ);

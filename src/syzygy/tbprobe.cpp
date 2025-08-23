@@ -60,6 +60,10 @@ using namespace Stockfish::Tablebases;
 
 int Stockfish::Tablebases::MaxCardinality;
 
+namespace {
+std::atomic<int> tbReferenceCount{0};
+}
+
 namespace Stockfish {
 
 namespace {
@@ -1335,17 +1339,35 @@ WDLScore search(Position& pos, ProbeState* result) {
 }  // namespace
 
 
+// Explicitly release tablebase resources. When the last user releases
+// its reference the global tables are cleared and mapped files unmapped.
+void Tablebases::release() {
+    if (tbReferenceCount.load(std::memory_order_acquire) > 0
+        && tbReferenceCount.fetch_sub(1, std::memory_order_acq_rel) == 1)
+    {
+        TBTables.clear();
+        MaxCardinality = 0;
+        TBFile::Paths.clear();
+    }
+}
+
 // Called at startup and after every change to
 // "SyzygyPath" UCI option to (re)create the various tables. It is not thread
 // safe, nor it needs to be.
 void Tablebases::init(const std::string& paths) {
 
+    if (paths.empty())
+    {
+        release();
+        return;
+    }
+
+    if (tbReferenceCount.fetch_add(1, std::memory_order_acq_rel) > 0 && paths == TBFile::Paths)
+        return;
+
     TBTables.clear();
     MaxCardinality = 0;
     TBFile::Paths  = paths;
-
-    if (paths.empty())
-        return;
 
     // MapB1H1H7[] encodes a square below a1-h8 diagonal to 0..27
     int code = 0;
