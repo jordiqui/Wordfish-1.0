@@ -128,26 +128,26 @@ Engine::Engine(std::optional<std::string> path) :
     options.add("Syzygy50MoveRule", Option(true));
 
     options.add("SyzygyProbeLimit", Option(7, 0, 7));
-    
+
     options.add("Book1", Option(false));
 
     options.add("Book1 File", Option("", [](const Option& o) {
-    polybook[0].init(o);
-    return std::nullopt;
-      }));
+                    polybook[0].init(o);
+                    return std::nullopt;
+                }));
 
     options.add("Book1 BestBookMove", Option(false));
 
     options.add("Book1 Depth", Option(255, 1, 350));
 
-	options.add("Book1 Width", Option(1, 1, 10));
+    options.add("Book1 Width", Option(1, 1, 10));
 
     options.add("Book2", Option(false));
 
     options.add("Book2 File", Option("", [](const Option& o) {
-    polybook[1].init(o);
-    return std::nullopt;
-      }));
+                    polybook[1].init(o);
+                    return std::nullopt;
+                }));
 
     options.add("Book2 BestBookMove", Option(false));
 
@@ -191,8 +191,9 @@ void Engine::search_clear() {
     tt.clear(threads);
     threads.clear();
 
-    // @TODO wont work with multiple instances
-    Tablebases::init(options["SyzygyPath"]);  // Free mapped files
+    // Release our reference to the tablebases. Other engine instances
+    // keep their mappings alive until they also release.
+    Tablebases::release();
 }
 
 void Engine::set_on_update_no_moves(std::function<void(const Engine::InfoShort&)>&& f) {
