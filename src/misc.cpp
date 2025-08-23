@@ -34,13 +34,16 @@
 #include <string_view>
 
 #include "types.h"
+#ifndef ENGINE_BUILD_DATE
+#define ENGINE_BUILD_DATE "220825"
+#endif
 
 namespace Stockfish {
 
 namespace {
 
 // Version number or dev.
-constexpr std::string_view version = "100825";
+constexpr std::string_view version = ENGINE_BUILD_DATE;
 
 // Our fancy logging facility. The trick here is to replace cin.rdbuf() and
 // cout.rdbuf() with two Tie objects that tie cin and cout to a file stream. We
@@ -115,7 +118,7 @@ class Logger {
 
 // Returns the full name of the current Wordfish version.
 std::string engine_version_info() {
-    return "Wordfish 1.0 120825";
+    return std::string("Wordfish 1.0 ") + version.data();
 }
 
 // Update author information

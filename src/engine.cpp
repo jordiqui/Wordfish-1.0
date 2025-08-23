@@ -61,115 +61,107 @@ Engine::Engine(std::optional<std::string> path) :
       NN::Networks(
         NN::NetworkBig({EvalFileDefaultNameBig, "None", ""}, NN::EmbeddedNNUEType::BIG),
         NN::NetworkSmall({EvalFileDefaultNameSmall, "None", ""}, NN::EmbeddedNNUEType::SMALL))) {
-
     pos.set(StartFEN, false, &states->back());
 
-    options.add(
+
+    options.add(  //
       "Debug Log File", Option("", [](const Option& o) {
           start_logger(o);
           return std::nullopt;
       }));
 
-    options.add(
+    options.add(  //
       "NumaPolicy", Option("auto", [this](const Option& o) {
           set_numa_config_from_option(o);
           return numa_config_information_as_string() + "\n"
                + thread_allocation_information_as_string();
       }));
 
-    options.add(
+    options.add(  //
       "Threads", Option(1, 1, MaxThreads, [this](const Option&) {
           resize_threads();
           return thread_allocation_information_as_string();
       }));
 
-    options.add(
+    options.add(  //
       "Hash", Option(16, 1, MaxHashMB, [this](const Option& o) {
           set_tt_size(o);
           return std::nullopt;
       }));
 
-    options.add(
+    options.add(  //
       "Clear Hash", Option([this](const Option&) {
           search_clear();
           return std::nullopt;
       }));
 
-    options.add("Ponder", Option(false));
-    options.add("MultiPV", Option(1, 1, MAX_MOVES));
+    options.add(  //
+      "Ponder", Option(false));
+
+    options.add(  //
+      "MultiPV", Option(1, 1, MAX_MOVES));
+
     options.add("Skill Level", Option(20, 0, 20));
+
     options.add("Move Overhead", Option(10, 0, 5000));
+
     options.add("nodestime", Option(0, 0, 10000));
+
     options.add("UCI_Chess960", Option(false));
+
     options.add("UCI_LimitStrength", Option(false));
+
     options.add("UCI_Elo",
-                Option(Stockfish::Search::Skill::LowestElo,
-                       Stockfish::Search::Skill::LowestElo,
+                Option(Stockfish::Search::Skill::LowestElo, Stockfish::Search::Skill::LowestElo,
                        Stockfish::Search::Skill::HighestElo));
+
     options.add("UCI_ShowWDL", Option(false));
 
-    options.add(
+    options.add(  //
       "SyzygyPath", Option("", [](const Option& o) {
           Tablebases::init(o);
           return std::nullopt;
       }));
 
     options.add("SyzygyProbeDepth", Option(1, 1, 100));
-    options.add("Syzygy50MoveRule", Option(true));
-    options.add("SyzygyProbeLimit", Option(7, 0, 7));
 
-    // --- Wordfish 1.0.1 "Book1" / "Book2" family (as in your current tree) ---
+    options.add("Syzygy50MoveRule", Option(true));
+
+    options.add("SyzygyProbeLimit", Option(7, 0, 7));
+    
     options.add("Book1", Option(false));
+
     options.add("Book1 File", Option("", [](const Option& o) {
-        polybook[0].init(o);
-        return std::nullopt;
-    }));
+    polybook[0].init(o);
+    return std::nullopt;
+      }));
+
     options.add("Book1 BestBookMove", Option(false));
+
     options.add("Book1 Depth", Option(255, 1, 350));
-    options.add("Book1 Width", Option(1, 1, 10));
+
+	options.add("Book1 Width", Option(1, 1, 10));
 
     options.add("Book2", Option(false));
+
     options.add("Book2 File", Option("", [](const Option& o) {
-        polybook[1].init(o);
-        return std::nullopt;
-    }));
+    polybook[1].init(o);
+    return std::nullopt;
+      }));
+
     options.add("Book2 BestBookMove", Option(false));
+
     options.add("Book2 Depth", Option(255, 1, 350));
+
     options.add("Book2 Width", Option(1, 1, 10));
 
-    // --- Classic Polyglot option names (restored for GUI compatibility) ---
-    // These provide the names Fritz/Cutechess and legacy tooling expect.
-    // We don't perform cross-assignment into other options (to avoid
-    // const-qualification issues in some forks). Instead, we attach the
-    // same side-effects (e.g., Polyglot init) where relevant.
-    options.add("OwnBook", Option(false));
-    options.add("BookFile", Option("", [](const Option& o) {
-        // Initialise Book1 slot for classic name as well
-        polybook[0].init(o);
-        return std::nullopt;
-    }));
-    options.add("BestBookMove", Option(false));
-    options.add("BookDepth", Option(255, 1, 350));
-    options.add("BookWidth", Option(1, 1, 10));
-
-    // Optional second classic set (if a GUI addresses two books)
-    options.add("OwnBook2", Option(false));
-    options.add("BookFile2", Option("", [](const Option& o) {
-        polybook[1].init(o);
-        return std::nullopt;
-    }));
-    options.add("BestBookMove2", Option(false));
-    options.add("BookDepth2", Option(255, 1, 350));
-    options.add("BookWidth2", Option(1, 1, 10));
-
-    // --- Networks ---
-    options.add(
+    options.add(  //
       "EvalFile", Option(EvalFileDefaultNameBig, [this](const Option& o) {
           load_big_network(o);
           return std::nullopt;
       }));
 
-    options.add(
+    options.add(  //
       "EvalFileSmall", Option(EvalFileDefaultNameSmall, [this](const Option& o) {
           load_small_network(o);
           return std::nullopt;
@@ -181,21 +173,24 @@ Engine::Engine(std::optional<std::string> path) :
 
 std::uint64_t Engine::perft(const std::string& fen, Depth depth, bool isChess960) {
     verify_networks();
+
     return Benchmark::perft(fen, depth, isChess960);
 }
 
 void Engine::go(Search::LimitsType& limits) {
     assert(limits.perft == 0);
     verify_networks();
+
     threads.start_thinking(options, pos, states, limits);
 }
-
 void Engine::stop() { threads.stop = true; }
 
 void Engine::search_clear() {
     wait_for_search_finished();
+
     tt.clear(threads);
     threads.clear();
+
     // @TODO wont work with multiple instances
     Tablebases::init(options["SyzygyPath"]);  // Free mapped files
 }
@@ -203,15 +198,19 @@ void Engine::search_clear() {
 void Engine::set_on_update_no_moves(std::function<void(const Engine::InfoShort&)>&& f) {
     updateContext.onUpdateNoMoves = std::move(f);
 }
+
 void Engine::set_on_update_full(std::function<void(const Engine::InfoFull&)>&& f) {
     updateContext.onUpdateFull = std::move(f);
 }
+
 void Engine::set_on_iter(std::function<void(const Engine::InfoIter&)>&& f) {
     updateContext.onIter = std::move(f);
 }
+
 void Engine::set_on_bestmove(std::function<void(std::string_view, std::string_view)>&& f) {
     updateContext.onBestmove = std::move(f);
 }
+
 void Engine::set_on_verify_networks(std::function<void(std::string_view)>&& f) {
     onVerifyNetworks = std::move(f);
 }
@@ -223,10 +222,13 @@ void Engine::set_position(const std::string& fen, const std::vector<std::string>
     states = StateListPtr(new std::deque<StateInfo>(1));
     pos.set(fen, options["UCI_Chess960"], &states->back());
 
-    for (const auto& move : moves) {
+    for (const auto& move : moves)
+    {
         auto m = UCIEngine::to_move(pos, move);
+
         if (m == Move::none())
             break;
+
         states->emplace_back();
         pos.do_move(m, states->back());
     }
@@ -236,13 +238,22 @@ void Engine::set_position(const std::string& fen, const std::vector<std::string>
 
 void Engine::set_numa_config_from_option(const std::string& o) {
     if (o == "auto" || o == "system")
+    {
         numaContext.set_numa_config(NumaConfig::from_system());
+    }
     else if (o == "hardware")
+    {
+        // Don't respect affinity set in the system.
         numaContext.set_numa_config(NumaConfig::from_system(false));
+    }
     else if (o == "none")
+    {
         numaContext.set_numa_config(NumaConfig{});
+    }
     else
+    {
         numaContext.set_numa_config(NumaConfig::from_string(o));
+    }
 
     // Force reallocation of threads in case affinities need to change.
     resize_threads();
@@ -252,6 +263,7 @@ void Engine::set_numa_config_from_option(const std::string& o) {
 void Engine::resize_threads() {
     threads.wait_for_search_finished();
     threads.set(numaContext.get_numa_config(), {options, threads, tt, networks}, updateContext);
+
     // Reallocate the hash with the new threadpool size
     set_tt_size(options["Hash"]);
     threads.ensure_network_replicated();
@@ -358,7 +370,8 @@ std::string Engine::thread_binding_information_as_string() const {
 
     bool isFirst = true;
 
-    for (auto&& [current, total] : boundThreadsByNode) {
+    for (auto&& [current, total] : boundThreadsByNode)
+    {
         if (!isFirst)
             ss << ":";
         ss << current << "/" << total;
@@ -372,7 +385,7 @@ std::string Engine::thread_allocation_information_as_string() const {
     std::stringstream ss;
 
     size_t threadsSize = threads.size();
-    ss << "Using " << threadsSize << (threadsSize > 1 ? "threads" : "thread");
+    ss << "Using " << threadsSize << (threadsSize > 1 ? " threads" : " thread");
 
     auto boundThreadsByNodeStr = thread_binding_information_as_string();
     if (boundThreadsByNodeStr.empty())
@@ -383,5 +396,4 @@ std::string Engine::thread_allocation_information_as_string() const {
 
     return ss.str();
 }
-
-} // namespace Stockfish
+}
