@@ -33,7 +33,7 @@ Revolution's architecture features:
 The distribution includes:
 
 - `README.md` (this documentation)
-- `COPYING.txt` ([GNU GPL v3 license][gpl-link])
+- `COPYING.txt` ([GNU GPLv3 license][gpl-link])
 - `AUTHORS` (contributor acknowledgments)
 - `src/` (source code with platform-specific Makefiles)
 - Neural network weights (`revolution.nnue`)
