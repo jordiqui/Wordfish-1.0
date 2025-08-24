@@ -9,7 +9,7 @@ the Free Software Foundation, either version 3 of the License, or
 
 Revolution incorporates code from the Stockfish, Berserk, and Obsidian chess
 engines, each distributed under the terms of the GNU General Public License
-version 3.  As such, this distribution is also released under the GPL v3.
+version 3 (GPLv3). As such, this distribution is also released under GPLv3.
 
 You should have received a copy of the GNU General Public License along with
 this program in the file Copying.txt. If not, see <https://www.gnu.org/licenses/>.
