@@ -82,6 +82,23 @@ directory is supplied via the `SyzygyPath` UCI option. The engine also exposes a
 available WDL and DTZ tables during initialization, reducing probe latency at the
 expense of additional startup time and memory usage.
 
+## Experience Book
+
+Revolution puede aprender de partidas previas guardando datos en un archivo `.exp`.
+Las siguientes opciones UCI controlan este sistema:
+
+- `Experience Enabled`: activa o desactiva la experiencia (por defecto `true`).
+- `Experience File`: nombre del archivo donde se almacena la experiencia (por defecto `raptora.exp`).
+- `Experience Readonly`: si es `true`, no se escriben cambios en el archivo.
+- `Experience Book`: usa la experiencia como libro de aperturas.
+- `Experience Book Width`: número de movimientos principales a considerar (1–20).
+- `Experience Book Eval Importance`: ponderación de la evaluación al ordenar movimientos (0–10).
+- `Experience Book Min Depth`: profundidad mínima para almacenar un movimiento (4–64).
+- `Experience Book Max Moves`: máximo de movimientos guardados por posición (1–100).
+
+El archivo se carga al iniciar el motor y se actualiza tras cada partida si la opción
+`Experience Readonly` está desactivada.
+
 ## License
 
 Revolution is distributed under the **[GNU General Public License v3][gpl-link]** (GPLv3).

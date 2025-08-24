@@ -37,6 +37,7 @@
 #include "perft.h"
 #include "polybook.h"
 #include "position.h"
+#include "experience.h"
 #include "search.h"
 #include "syzygy/tbprobe.h"
 #include "types.h"
@@ -123,11 +124,10 @@ Engine::Engine(std::optional<std::string> path) :
           return std::nullopt;
       }));
 
-    options.add(
-      "SyzygyPremap", Option(false, [this](const Option& o) {
-          Tablebases::init(options["SyzygyPath"], bool(o));
-          return std::nullopt;
-      }));
+    options.add("SyzygyPremap", Option(false, [this](const Option& o) {
+                    Tablebases::init(options["SyzygyPath"], bool(o));
+                    return std::nullopt;
+                }));
     options.add("SyzygyProbeDepth", Option(1, 1, 100));
 
     options.add("Syzygy50MoveRule", Option(true));
@@ -160,6 +160,27 @@ Engine::Engine(std::optional<std::string> path) :
 
     options.add("Book2 Width", Option(1, 1, 10));
 
+    options.add("Experience Enabled", Option(true, [this](const Option& o) {
+                    if (bool(o))
+                        experience.load(options["Experience File"]);
+                    else
+                        experience.clear();
+                    return std::nullopt;
+                }));
+
+    options.add("Experience File", Option("raptora.exp", [this](const Option& o) {
+                    if ((bool) options["Experience Enabled"])
+                        experience.load(o);
+                    return std::nullopt;
+                }));
+
+    options.add("Experience Readonly", Option(false));
+    options.add("Experience Book", Option(false));
+    options.add("Experience Book Width", Option(1, 1, 20));
+    options.add("Experience Book Eval Importance", Option(5, 0, 10));
+    options.add("Experience Book Min Depth", Option(27, 4, 64));
+    options.add("Experience Book Max Moves", Option(16, 1, 100));
+
     options.add(  //
       "EvalFile", Option(EvalFileDefaultNameBig, [this](const Option& o) {
           load_big_network(o);
@@ -171,6 +192,9 @@ Engine::Engine(std::optional<std::string> path) :
           load_small_network(o);
           return std::nullopt;
       }));
+
+    if ((bool) options["Experience Enabled"])
+        experience.load(options["Experience File"]);
 
     load_networks();
     resize_threads();
@@ -199,6 +223,9 @@ void Engine::search_clear() {
     // Release our reference to the tablebases. Other engine instances
     // keep their mappings alive until they also release.
     Tablebases::release();
+
+    if ((bool) options["Experience Enabled"] && !(bool) options["Experience Readonly"])
+        experience.save(options["Experience File"]);
 }
 
 void Engine::set_on_update_no_moves(std::function<void(const Engine::InfoShort&)>&& f) {

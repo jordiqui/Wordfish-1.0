@@ -42,6 +42,7 @@
 #include "nnue/network.h"
 #include "nnue/nnue_accumulator.h"
 #include "polybook.h"
+#include "experience.h"
 #include "position.h"
 #include "syzygy/tbprobe.h"
 #include "thread.h"
@@ -184,16 +185,21 @@ void Search::Worker::start_searching() {
     {
         if (!limits.infinite && !limits.mate)
         {
-if ((bool) options["Book1"] && rootPos.game_ply() / 2 < (int) options["Book1 Depth"])
-    bookMove = polybook[0].probe(rootPos,
-                                 (bool) options["Book1 BestBookMove"],
-                                 (int) options["Book1 Width"]);
+            if ((bool) options["Experience Enabled"] && (bool) options["Experience Book"])
+                bookMove = experience.probe(rootPos, (int) options["Experience Book Width"],
+                                            (int) options["Experience Book Eval Importance"],
+                                            (int) options["Experience Book Min Depth"],
+                                            (int) options["Experience Book Max Moves"]);
 
-if (bookMove == Move::none() && (bool) options["Book2"]
-    && rootPos.game_ply() / 2 < (int) options["Book2 Depth"])
-    bookMove = polybook[1].probe(rootPos,
-                                 (bool) options["Book2 BestBookMove"],
-                                 (int) options["Book2 Width"]);
+            if (bookMove == Move::none() && (bool) options["Book1"]
+                && rootPos.game_ply() / 2 < (int) options["Book1 Depth"])
+                bookMove = polybook[0].probe(rootPos, (bool) options["Book1 BestBookMove"],
+                                             (int) options["Book1 Width"]);
+
+            if (bookMove == Move::none() && (bool) options["Book2"]
+                && rootPos.game_ply() / 2 < (int) options["Book2 Depth"])
+                bookMove = polybook[1].probe(rootPos, (bool) options["Book2 BestBookMove"],
+                                             (int) options["Book2 Width"]);
         }
 
         if (bookMove != Move::none()
@@ -255,6 +261,10 @@ if (bookMove == Move::none() && (bool) options["Book2"]
 
     auto bestmove = UCIEngine::move(bestThread->rootMoves[0].pv[0], rootPos.is_chess960());
     main_manager()->updates.onBestmove(bestmove, ponder);
+
+    if ((bool) options["Experience Enabled"] && !(bool) options["Experience Readonly"])
+        experience.update(rootPos, bestThread->rootMoves[0].pv[0], bestThread->rootMoves[0].score,
+                          bestThread->completedDepth);
 }
 
 // Main iterative deepening loop. It calls search()
