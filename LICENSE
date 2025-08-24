@@ -1,0 +1,15 @@
+Revolution Chess Engine
+
+Copyright (c) 2024 Jorge Ruiz Centelles
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Revolution incorporates code from the Stockfish, Berserk, and Obsidian chess
+engines, each distributed under the terms of the GNU General Public License
+version 3.  As such, this distribution is also released under the GPL v3.
+
+You should have received a copy of the GNU General Public License along with
+this program in the file Copying.txt. If not, see <https://www.gnu.org/licenses/>.

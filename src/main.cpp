@@ -31,7 +31,7 @@ int main(int argc, char* argv[]) {
     // Clear, consistent banner (many GUIs echo this to their logs)
     std::cout << ENGINE_NAME << ' ' << ENGINE_BUILD_DATE
               << ' ' << __DATE__ << ' ' << __TIME__
-              << " by Jorge Ruiz" << std::endl;
+              << " by Jorge Ruiz Centelles" << std::endl;
 
     std::cout << compiler_info() << std::endl;
 

@@ -1,24 +1,26 @@
-# Wordfish Chess Engine
+# Revolution Chess Engine
 
 <div align="center">
-  <img src="[https://ijccrl.com/wp-content/uploads/2025/08/wordfish.png]" 
-  <h3>Wordfish</h3>
+  <img src="[https://ijccrl.com/wp-content/uploads/2025/08/revolution.png]" 
+  <h3>Revolution</h3>
   
   A free and open-source UCI chess engine combining classical algorithms with neural network innovations.
   <br>
-  <strong><a href="#">Explore Wordfish Documentation »</a>
+  <strong><a href="#">Explore Revolution Documentation »</a>
+
+  <em>Author: Jorge Ruiz Centelles</em>
   
 </div>
 
 ## Overview
 
-**Wordfish** is a free, open-source UCI chess engine implementing cutting-edge search algorithms combined with neural network evaluation. Derived from fundamental chess programming principles, Wordfish analyzes positions through parallelized alpha-beta search enhanced with null-move pruning and late move reductions.
+**Revolution** is a free, open-source UCI chess engine implementing cutting-edge search algorithms combined with neural network evaluation. Derived from fundamental chess programming principles, Revolution analyzes positions through parallelized alpha-beta search enhanced with null-move pruning and late move reductions.
 
-As a UCI-compliant engine, Wordfish operates through **standard chess interfaces** without an integrated graphical interface. Users must employ compatible chess GUIs (Arena, Scid vs PC, etc.) for board visualization and move input. Consult your GUI documentation for implementation details.
+As a UCI-compliant engine, Revolution operates through **standard chess interfaces** without an integrated graphical interface. Users must employ compatible chess GUIs (Arena, Scid vs PC, etc.) for board visualization and move input. Consult your GUI documentation for implementation details.
 
 ## Technical Architecture
 
-Wordfish's architecture features:
+Revolution's architecture features:
 
 - Hybrid evaluation system combining classical heuristics with NNUE networks
 - SMP parallelization with YBWC (Young Brothers Wait Concept)
@@ -34,7 +36,7 @@ The distribution includes:
 - `COPYING.txt` ([GNU GPL v3 license][gpl-link])
 - `AUTHORS` (contributor acknowledgments)
 - `src/` (source code with platform-specific Makefiles)
-- Neural network weights (`wordfish.nnue`)
+- Neural network weights (`revolution.nnue`)
 
 ## Contributing
 
@@ -47,13 +49,13 @@ Contributions must adhere to:
 
 ### Testing Infrastructure
 Improvements require extensive testing:
-- Install the [Wordfish Test Worker][worker-link]
-- Participate in active tests on [Wordfish Test Suite][testsuite-link]
+- Install the [Revolution Test Worker][worker-link]
+- Participate in active tests on [Revolution Test Suite][testsuite-link]
 - Verify ELO gains through SPRT validation
 
 ### Community
 Technical discussions occur primarily through:
-- [Wordfish Discord Server][discord-link]
+- [Revolution Discord Server][discord-link]
 - [GitHub Discussions][discussions-link]
 - [Chess Programming Wiki][chesswiki-link]
 
@@ -74,7 +76,7 @@ Full compilation guides available in [documentation][doc-link].
 
 ## License
 
-Wordfish is licensed under the **[GNU General Public License v3][gpl-link]** (GPL v3). This grants permission to:
+Revolution is licensed under the **[GNU General Public License v3][gpl-link]** (GPL v3). This grants permission to:
 - Use, modify, and distribute the software
 - Incorporate into larger projects
 - Conduct commercial utilization
@@ -86,7 +88,7 @@ Wordfish is licensed under the **[GNU General Public License v3][gpl-link]** (GP
 
 ## Acknowledgements
 
-Wordfish incorporates:
+Revolution incorporates:
 - Neural networks trained on [Lichess open database][lichess-db]
 - Search techniques from [CCC testing community][ccc-link]
 - Positional analysis concepts from [CPW research][cpw-link]
@@ -103,7 +105,7 @@ Wordfish incorporates:
 [ccc-link]: https://www.chess.com/computer-chess-championship
 [cpw-link]: https://www.chessprogramming.org
 
-# Changes into Wordfish 1.0 dev 120825
+# Changes into Revolution 1.0 dev 120825
 Changes made:
 
 The definition of the CommandLine class in misc.cpp has been removed (lines 37-40 of the original content).

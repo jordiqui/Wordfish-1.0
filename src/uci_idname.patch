@@ -36,7 +36,7 @@ diff --git a/src/uci.cpp b/src/uci.cpp
 +//     while (std::cin >> token) {
 +//         if (token == "uci") {
 +//             uci_print_id_name();
-+//             std::cout << "id author Jorge Ruiz" << std::endl;
++//             std::cout << "id author Jorge Ruiz Centelles" << std::endl;
 +//             // ... print options, then:
 +//             std::cout << "uciok" << std::endl;
 +//         }
