@@ -1,28 +1,22 @@
 /*
-  Stockfish, a UCI chess playing engine derived from Glaurung 2.1
-  Copyright (C) 2004-2025 The Stockfish developers (see AUTHORS file)
+  Revolution, a UCI chess engine based on Stockfish, Berserk, and Obsidian
+  Copyright (C) 2024 Jorge Ruiz Centelles
 
-  Stockfish is free software: you can redistribute it and/or modify
+  This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
 
-  Stockfish is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
-
-  You should have received a copy of the GNU General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  This file incorporates code from Stockfish and retains its original license.
 */
 
 #include "ucioption.h"
 // --- Engine identity (fallbacks; Makefile can override) ---
 #ifndef ENGINE_NAME
-#define ENGINE_NAME "Wordfish 1.0.1 dev"
+#define ENGINE_NAME "Revolution 1.0 dev"
 #endif
 #ifndef ENGINE_BUILD_DATE
-#define ENGINE_BUILD_DATE "250822"  // yymmdd; overridden by Makefile if provided
+#define ENGINE_BUILD_DATE "120825"  // yymmdd; overridden by Makefile if provided
 #endif
 
 

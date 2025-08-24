@@ -114,7 +114,7 @@ void UCIEngine::loop() {
 
         else if (token == "uci")
         {
-            // Force a stable, explicit UCI name so GUIs show "Wordfish 1.0.1 dev <date>"
+            // Force a stable, explicit UCI name so GUIs show "Revolution 1.0 dev <date>"
             sync_cout << "id name " << ENGINE_NAME << ' ' << ENGINE_BUILD_DATE << "\n"
                 << "id author Jorge Ruiz Centelles" << "\n"
                 << engine.get_options() << sync_endl;
