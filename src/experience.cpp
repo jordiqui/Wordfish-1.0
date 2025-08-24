@@ -32,7 +32,8 @@ void Experience::save(const std::string& file) const {
                 << '\n';
 }
 
-Move Experience::probe(Position& pos, int width, int evalImportance, int minDepth, int maxMoves) {
+Move Experience::probe(Position& pos, [[maybe_unused]] int width,
+                       int evalImportance, int minDepth, int maxMoves) {
     auto it = table.find(pos.key());
     if (it == table.end())
         return Move::none();
