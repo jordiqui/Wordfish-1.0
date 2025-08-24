@@ -30,6 +30,7 @@
 #include <iostream>
 #include <mutex>
 #include <sstream>
+#include <string>
 #include <string_view>
 #include <sys/stat.h>
 #include <type_traits>
@@ -370,6 +371,7 @@ struct TBTable {
     bool             hasPawns;
     bool             hasUniquePieces;
     uint8_t          pawnCount[2];     // [Lead color / other color]
+    std::string      code;              // Piece placement code
     PairsData        items[Sides][4];  // [wtm / btm][FILE_A..FILE_D or 0]
 
     PairsData* get(int stm, int f) { return &items[stm % Sides][hasPawns ? f : 0]; }
@@ -387,13 +389,14 @@ struct TBTable {
 };
 
 template<>
-TBTable<WDL>::TBTable(const std::string& code) :
+TBTable<WDL>::TBTable(const std::string& codeStr) :
     TBTable() {
 
+    this->code = codeStr;
     StateInfo st;
     Position  pos;
 
-    key        = pos.set(code, WHITE, &st).material_key();
+    key        = pos.set(codeStr, WHITE, &st).material_key();
     pieceCount = pos.count<ALL_PIECES>();
     hasPawns   = pos.pieces(PAWN);
 
@@ -411,7 +414,7 @@ TBTable<WDL>::TBTable(const std::string& code) :
     pawnCount[0] = pos.count<PAWN>(c ? WHITE : BLACK);
     pawnCount[1] = pos.count<PAWN>(c ? BLACK : WHITE);
 
-    key2 = pos.set(code, BLACK, &st).material_key();
+    key2 = pos.set(codeStr, BLACK, &st).material_key();
 }
 
 template<>
@@ -419,6 +422,7 @@ TBTable<DTZ>::TBTable(const TBTable<WDL>& wdl) :
     TBTable() {
 
     // Use the corresponding WDL table to avoid recalculating all from scratch
+    code            = wdl.code;
     key             = wdl.key;
     key2            = wdl.key2;
     pieceCount      = wdl.pieceCount;
@@ -506,6 +510,7 @@ class TBTables {
     }
 
     void add(const std::vector<PieceType>& pieces);
+    void premap();
 };
 
 TBTables TBTables;
@@ -1263,6 +1268,24 @@ void* mapped(TBTable<Type>& e, const Position& pos) {
     return e.baseAddress;
 }
 
+void TBTables::premap() {
+    for (auto& tb : wdlTable)
+    {
+        StateInfo st;
+        Position  pos;
+        pos.set(tb.code, WHITE, &st);
+        mapped<WDL>(tb, pos);
+    }
+
+    for (auto& tb : dtzTable)
+    {
+        StateInfo st;
+        Position  pos;
+        pos.set(tb.code, WHITE, &st);
+        mapped<DTZ>(tb, pos);
+    }
+}
+
 template<TBType Type, typename Ret = typename TBTable<Type>::Ret>
 Ret probe_table(const Position& pos, ProbeState* result, WDLScore wdl = WDLDraw) {
 
@@ -1368,7 +1391,7 @@ void Tablebases::release() {
 // Called at startup and after every change to
 // "SyzygyPath" UCI option to (re)create the various tables. It is not thread
 // safe, nor it needs to be.
-void Tablebases::init(const std::string& paths) {
+void Tablebases::init(const std::string& paths, bool premap) {
 
     if (paths.empty())
     {
@@ -1521,6 +1544,9 @@ void Tablebases::init(const std::string& paths) {
     }
 
     TBTables.info();
+
+    if (premap)
+        TBTables.premap();
 }
 
 // Probe the WDL table for a particular position.
