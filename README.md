@@ -76,19 +76,22 @@ Full compilation guides available in [documentation][doc-link].
 
 ## License
 
-Revolution is licensed under the **[GNU General Public License v3][gpl-link]** (GPL v3). This grants permission to:
-- Use, modify, and distribute the software
-- Incorporate into larger projects
-- Conduct commercial utilization
+Revolution is distributed under the **[GNU General Public License v3][gpl-link]** (GPLv3).
+It integrates source code from:
 
-**Distribution Requirements**:
-1. Include original license text (`COPYING.txt`)
+- [Stockfish](https://github.com/official-stockfish/Stockfish)
+- [Berserk](https://github.com/jhonnold/berserk/tree/main/src)
+- [Obsidian](https://github.com/gab8192/Obsidian)
+
+Because these projects are GPLv3, any distribution of Revolution must also comply with GPLv3.
+When redistributing, you must:
+1. Include the original license text (`COPYING.txt`)
 2. Provide complete corresponding source code
-3. Disclose all modifications under GPL v3
+3. Disclose all modifications under GPLv3
 
 ## Acknowledgements
 
-Revolution incorporates:
+Revolution also benefits from:
 - Neural networks trained on [Lichess open database][lichess-db]
 - Search techniques from [CCC testing community][ccc-link]
 - Positional analysis concepts from [CPW research][cpw-link]
@@ -104,14 +107,3 @@ Revolution incorporates:
 [lichess-db]: https://database.lichess.org
 [ccc-link]: https://www.chess.com/computer-chess-championship
 [cpw-link]: https://www.chessprogramming.org
-
-# Changes into Revolution 1.0 dev 120825
-Changes made:
-
-The definition of the CommandLine class in misc.cpp has been removed (lines 37-40 of the original content).
-
-The implementations of the member functions get_binary_directory and get_working_directory have been maintained, and they now refer to the CommandLine class declared in misc.h.
-
-This resolves the redefinition error while maintaining the necessary functionality. The other files (main.cpp and uci.cpp) remain unchanged as they did not have this issue.
-Added error handling to std_aligned_alloc, capturing posix_memalign’s return code and returning nullptr on failure:
-https://chatgpt.com/s/cd_68a9de471e2481919e1a3576323e36e6

@@ -4,7 +4,7 @@
 
 set -e
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-ENGINE="${ENGINE:-$ROOT_DIR/src/Wordfish}"
+ENGINE="${ENGINE:-$ROOT_DIR/src/revolution}"
 OPPONENT="${1:?Opponent engine path required}"
 GAMES="${2:-10}"
 TC="${3:-40/0.4+0.4}"
