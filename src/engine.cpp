@@ -21,6 +21,7 @@
 #include <algorithm>
 #include <cassert>
 #include <deque>
+#include <fstream>
 #include <iosfwd>
 #include <memory>
 #include <ostream>
@@ -63,6 +64,7 @@ Engine::Engine(std::optional<std::string> path) :
         NN::NetworkSmall({EvalFileDefaultNameSmall, "None", ""}, NN::EmbeddedNNUEType::SMALL))) {
     pos.set(StartFEN, false, &states->back());
 
+    experienceFile = "revolution.exp";
 
     options.add(  //
       "Debug Log File", Option("", [](const Option& o) {
@@ -123,11 +125,10 @@ Engine::Engine(std::optional<std::string> path) :
           return std::nullopt;
       }));
 
-    options.add(
-      "SyzygyPremap", Option(false, [this](const Option& o) {
-          Tablebases::init(options["SyzygyPath"], bool(o));
-          return std::nullopt;
-      }));
+    options.add("SyzygyPremap", Option(false, [this](const Option& o) {
+                    Tablebases::init(options["SyzygyPath"], bool(o));
+                    return std::nullopt;
+                }));
     options.add("SyzygyProbeDepth", Option(1, 1, 100));
 
     options.add("Syzygy50MoveRule", Option(true));
@@ -160,6 +161,13 @@ Engine::Engine(std::optional<std::string> path) :
 
     options.add("Book2 Width", Option(1, 1, 10));
 
+    options.add("Experience", Option(false));
+
+    options.add("Experience File", Option("revolution.exp", [this](const Option& o) {
+                    experienceFile = std::string(o);
+                    return std::nullopt;
+                }));
+
     options.add(  //
       "EvalFile", Option(EvalFileDefaultNameBig, [this](const Option& o) {
           load_big_network(o);
@@ -185,6 +193,12 @@ std::uint64_t Engine::perft(const std::string& fen, Depth depth, bool isChess960
 void Engine::go(Search::LimitsType& limits) {
     assert(limits.perft == 0);
     verify_networks();
+
+    if (!experienceFileCreated && options["Experience"])
+    {
+        std::ofstream file(binaryDirectory + experienceFile, std::ios::app);
+        experienceFileCreated = true;
+    }
 
     threads.start_thinking(options, pos, states, limits);
 }

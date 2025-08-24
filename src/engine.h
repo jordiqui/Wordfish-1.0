@@ -120,6 +120,9 @@ class Engine {
     TranspositionTable                       tt;
     LazyNumaReplicated<Eval::NNUE::Networks> networks;
 
+    std::string experienceFile;
+    bool        experienceFileCreated = false;
+
     Search::SearchManager::UpdateContext  updateContext;
     std::function<void(std::string_view)> onVerifyNetworks;
 };
