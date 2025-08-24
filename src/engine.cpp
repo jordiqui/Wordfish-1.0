@@ -118,11 +118,12 @@ Engine::Engine(std::optional<std::string> path) :
     options.add("UCI_ShowWDL", Option(false));
 
     options.add(  //
-      "SyzygyPath", Option("", [](const Option& o) {
-          Tablebases::init(o);
+      "SyzygyPath", Option("", [this](const Option& o) {
+          Tablebases::init(o, bool(options["SyzygyPremap"]));
           return std::nullopt;
       }));
 
+    options.add("SyzygyPremap", Option(false));
     options.add("SyzygyProbeDepth", Option(1, 1, 100));
 
     options.add("Syzygy50MoveRule", Option(true));

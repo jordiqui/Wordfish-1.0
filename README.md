@@ -74,6 +74,14 @@ Supported architectures:
 
 Full compilation guides available in [documentation][doc-link].
 
+## Syzygy Tablebases
+
+Revolution can probe [Syzygy](https://github.com/syzygy1) endgame tablebases when a
+directory is supplied via the `SyzygyPath` UCI option. The engine also exposes a
+`SyzygyPremap` boolean option. When set to `true`, `Tablebases::init` pre-maps all
+available WDL and DTZ tables during initialization, reducing probe latency at the
+expense of additional startup time and memory usage.
+
 ## License
 
 Revolution is distributed under the **[GNU General Public License v3][gpl-link]** (GPLv3).
