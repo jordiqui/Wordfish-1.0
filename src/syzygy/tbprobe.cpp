@@ -344,6 +344,8 @@ struct PairsData {
     uint64_t groupIdx[TBPIECES + 1];  // Start index used for the encoding of the group's pieces
     int      groupLen[TBPIECES + 1];  // Number of pieces in a given group: KRKN -> (3, 1)
     uint16_t map_idx[4];              // WDLWin, WDLLoss, WDLCursedWin, WDLBlessedLoss (used in DTZ)
+    uint32_t cachedBlock = UINT32_MAX;
+    std::vector<int16_t> blockCache;  // Cache of decompressed block values
 };
 
 // struct TBTable contains indexing information to access the corresponding TBFile.
@@ -556,6 +558,62 @@ void TBTables::add(const std::vector<PieceType>& pieces) {
 // Huffman codes are the same for all blocks in the table. A non-symmetric pawnless TB file
 // will have one table for wtm and one for btm, a TB file with pawns will have tables per
 // file a,b,c,d also, in this case, one set for wtm and one for btm.
+
+// Decompress a single block and cache all its values into blockCache.
+void decompress_block(PairsData* d, uint32_t block) {
+    d->cachedBlock = block;
+
+    int len = d->blockLength[block] + 1;
+    d->blockCache.resize(len);
+
+    uint32_t* ptr = (uint32_t*) (d->data + (uint64_t(block) * d->sizeofBlock));
+    uint64_t  buf64 = number<uint64_t, BigEndian>(ptr);
+    ptr += 2;
+    int buf64Size = 64;
+
+    std::vector<Sym> stack;
+    stack.reserve(64);
+
+    for (int i = 0; i < len; ++i)
+    {
+        Sym sym;
+
+        if (stack.empty())
+        {
+            int l = 0;
+            while (buf64 < d->base64[l])
+                ++l;
+
+            sym = Sym((buf64 - d->base64[l]) >> (64 - l - d->minSymLen));
+            sym += number<Sym, LittleEndian>(&d->lowestSym[l]);
+
+            l += d->minSymLen;
+            buf64 <<= l;
+            buf64Size -= l;
+
+            if (buf64Size <= 32)
+            {
+                buf64Size += 32;
+                buf64 |= uint64_t(number<uint32_t, BigEndian>(ptr++)) << (64 - buf64Size);
+            }
+        }
+        else
+        {
+            sym = stack.back();
+            stack.pop_back();
+        }
+
+        while (d->symlen[sym])
+        {
+            Sym right = d->btree[sym].get<LR::Right>();
+            stack.push_back(right);
+            sym = d->btree[sym].get<LR::Left>();
+        }
+
+        d->blockCache[i] = d->btree[sym].get<LR::Left>();
+    }
+}
+
 int decompress_pairs(PairsData* d, uint64_t idx) {
 
     // Special case where all table positions store the same value
@@ -601,75 +659,10 @@ int decompress_pairs(PairsData* d, uint64_t idx) {
     while (offset > d->blockLength[block])
         offset -= d->blockLength[block++] + 1;
 
-    // Finally, we find the start address of our block of canonical Huffman symbols
-    uint32_t* ptr = (uint32_t*) (d->data + (uint64_t(block) * d->sizeofBlock));
+    if (d->cachedBlock != block)
+        decompress_block(d, block);
 
-    // Read the first 64 bits in our block, this is a (truncated) sequence of
-    // unknown number of symbols of unknown length but we know the first one
-    // is at the beginning of this 64-bit sequence.
-    uint64_t buf64 = number<uint64_t, BigEndian>(ptr);
-    ptr += 2;
-    int buf64Size = 64;
-    Sym sym;
-
-    while (true)
-    {
-        int len = 0;  // This is the symbol length - d->min_sym_len
-
-        // Now get the symbol length. For any symbol s64 of length l right-padded
-        // to 64 bits we know that d->base64[l-1] >= s64 >= d->base64[l] so we
-        // can find the symbol length iterating through base64[].
-        while (buf64 < d->base64[len])
-            ++len;
-
-        // All the symbols of a given length are consecutive integers (numerical
-        // sequence property), so we can compute the offset of our symbol of
-        // length len, stored at the beginning of buf64.
-        sym = Sym((buf64 - d->base64[len]) >> (64 - len - d->minSymLen));
-
-        // Now add the value of the lowest symbol of length len to get our symbol
-        sym += number<Sym, LittleEndian>(&d->lowestSym[len]);
-
-        // If our offset is within the number of values represented by symbol sym,
-        // we are done.
-        if (offset < d->symlen[sym] + 1)
-            break;
-
-        // ...otherwise update the offset and continue to iterate
-        offset -= d->symlen[sym] + 1;
-        len += d->minSymLen;  // Get the real length
-        buf64 <<= len;        // Consume the just processed symbol
-        buf64Size -= len;
-
-        if (buf64Size <= 32)
-        {  // Refill the buffer
-            buf64Size += 32;
-            buf64 |= uint64_t(number<uint32_t, BigEndian>(ptr++)) << (64 - buf64Size);
-        }
-    }
-
-    // Now we have our symbol that expands into d->symlen[sym] + 1 symbols.
-    // We binary-search for our value recursively expanding into the left and
-    // right child symbols until we reach a leaf node where symlen[sym] + 1 == 1
-    // that will store the value we need.
-    while (d->symlen[sym])
-    {
-        Sym left = d->btree[sym].get<LR::Left>();
-
-        // If a symbol contains 36 sub-symbols (d->symlen[sym] + 1 = 36) and
-        // expands in a pair (d->symlen[left] = 23, d->symlen[right] = 11), then
-        // we know that, for instance, the tenth value (offset = 10) will be on
-        // the left side because in Recursive Pairing child symbols are adjacent.
-        if (offset < d->symlen[left] + 1)
-            sym = left;
-        else
-        {
-            offset -= d->symlen[left] + 1;
-            sym = d->btree[sym].get<LR::Right>();
-        }
-    }
-
-    return d->btree[sym].get<LR::Left>();
+    return d->blockCache[offset];
 }
 
 bool check_dtz_stm(TBTable<WDL>*, int, File) { return true; }
@@ -939,7 +932,8 @@ encode_remaining:
     }
 
     // Now that we have the index, decompress the pair and get the score
-    return map_score(entry, tbFile, decompress_pairs(d, idx), wdl);
+    int value = decompress_pairs(d, idx);
+    return map_score(entry, tbFile, value, wdl);
 }
 
 // Group together pieces that will be encoded together. The general rule is that
