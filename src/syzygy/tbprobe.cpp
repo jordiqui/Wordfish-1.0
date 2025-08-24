@@ -365,6 +365,7 @@ struct TBTable {
     void*            baseAddress;
     uint8_t*         map;
     uint64_t         mapping;
+    std::mutex       mapMutex;
     Key              key;
     Key              key2;
     int              pieceCount;
@@ -1235,15 +1236,12 @@ void set(T& e, uint8_t* data) {
 // safe and can be called concurrently.
 template<TBType Type>
 void* mapped(TBTable<Type>& e, const Position& pos) {
-
-    static std::mutex mutex;
-
     // Use 'acquire' to avoid a thread reading 'ready' == true while
     // another is still working. (compiler reordering may cause this).
     if (e.ready.load(std::memory_order_acquire))
         return e.baseAddress;  // Could be nullptr if file does not exist
 
-    std::scoped_lock<std::mutex> lk(mutex);
+    std::scoped_lock lock(e.mapMutex);
 
     if (e.ready.load(std::memory_order_relaxed))  // Recheck under lock
         return e.baseAddress;
