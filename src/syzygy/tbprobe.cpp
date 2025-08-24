@@ -56,6 +56,10 @@
     #include <windows.h>
 #endif
 
+#if defined(_MSC_VER)
+    #include <xmmintrin.h>  // For _mm_prefetch
+#endif
+
 using namespace Stockfish::Tablebases;
 
 int Stockfish::Tablebases::MaxCardinality;
@@ -603,6 +607,16 @@ int decompress_pairs(PairsData* d, uint64_t idx) {
 
     // Finally, we find the start address of our block of canonical Huffman symbols
     uint32_t* ptr = (uint32_t*) (d->data + (uint64_t(block) * d->sizeofBlock));
+
+#ifndef NO_PREFETCH
+    #if defined(_MSC_VER)
+    _mm_prefetch(reinterpret_cast<const char*>(ptr), _MM_HINT_T0);
+    _mm_prefetch(reinterpret_cast<const char*>(ptr) + d->sizeofBlock, _MM_HINT_T0);
+    #else
+    __builtin_prefetch(ptr);
+    __builtin_prefetch(reinterpret_cast<const char*>(ptr) + d->sizeofBlock);
+    #endif
+#endif
 
     // Read the first 64 bits in our block, this is a (truncated) sequence of
     // unknown number of symbols of unknown length but we know the first one
