@@ -564,6 +564,11 @@ void decompress_block(PairsData* d, uint32_t block) {
     d->cachedBlock = block;
 
     int len = d->blockLength[block] + 1;
+    assert(len <= 65536);
+
+    if (d->blockCache.capacity() < 65536)
+        d->blockCache.reserve(65536);
+
     d->blockCache.resize(len);
 
     uint32_t* ptr = (uint32_t*) (d->data + (uint64_t(block) * d->sizeofBlock));
