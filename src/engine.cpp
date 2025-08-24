@@ -123,7 +123,11 @@ Engine::Engine(std::optional<std::string> path) :
           return std::nullopt;
       }));
 
-    options.add("SyzygyPremap", Option(false));
+    options.add(
+      "SyzygyPremap", Option(false, [this](const Option& o) {
+          Tablebases::init(options["SyzygyPath"], bool(o));
+          return std::nullopt;
+      }));
     options.add("SyzygyProbeDepth", Option(1, 1, 100));
 
     options.add("Syzygy50MoveRule", Option(true));
