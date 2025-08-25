@@ -11,25 +11,37 @@ Experience experience;
 void Experience::clear() { table.clear(); }
 
 void Experience::load(const std::string& file) {
-    std::ifstream in(file);
+    std::ifstream in(file, std::ios::binary);
     if (!in)
         return;
     table.clear();
-    uint64_t key;
-    unsigned move;
-    int      score, depth, count;
-    while (in >> key >> move >> score >> depth >> count)
-        table[key].push_back({Move(static_cast<std::uint16_t>(move)), score, depth, count});
+    while (true) {
+        uint64_t key;
+        unsigned move;
+        int      score, depth, count;
+        if (!in.read(reinterpret_cast<char*>(&key), sizeof(key)))
+            break;
+        in.read(reinterpret_cast<char*>(&move), sizeof(move));
+        in.read(reinterpret_cast<char*>(&score), sizeof(score));
+        in.read(reinterpret_cast<char*>(&depth), sizeof(depth));
+        in.read(reinterpret_cast<char*>(&count), sizeof(count));
+        table[key].emplace_back(ExperienceEntry{Move(static_cast<std::uint16_t>(move)), score, depth, count});
+    }
 }
 
 void Experience::save(const std::string& file) const {
-    std::ofstream out(file);
+    std::ofstream out(file, std::ios::binary);
     if (!out)
         return;
     for (const auto& [key, vec] : table)
-        for (const auto& e : vec)
-            out << key << ' ' << e.move.raw() << ' ' << e.score << ' ' << e.depth << ' ' << e.count
-                << '\n';
+        for (const auto& e : vec) {
+            unsigned move = e.move.raw();
+            out.write(reinterpret_cast<const char*>(&key), sizeof(key));
+            out.write(reinterpret_cast<const char*>(&move), sizeof(move));
+            out.write(reinterpret_cast<const char*>(&e.score), sizeof(e.score));
+            out.write(reinterpret_cast<const char*>(&e.depth), sizeof(e.depth));
+            out.write(reinterpret_cast<const char*>(&e.count), sizeof(e.count));
+        }
 }
 
 Move Experience::probe(Position& pos, [[maybe_unused]] int width,

@@ -84,11 +84,11 @@ expense of additional startup time and memory usage.
 
 ## Experience Book
 
-Revolution puede aprender de partidas previas guardando datos en un archivo `.bin`.
+Revolution puede aprender de partidas previas guardando datos en un archivo `.exp` en formato binario.
 Las siguientes opciones UCI controlan este sistema:
 
 - `Experience Enabled`: activa o desactiva la experiencia (por defecto `true`).
-- `Experience File`: nombre del archivo donde se almacena la experiencia (por defecto `revolution.bin`).
+- `Experience File`: nombre del archivo donde se almacena la experiencia (por defecto `revolution.exp`).
 - `Experience Readonly`: si es `true`, no se escriben cambios en el archivo.
 - `Experience Book`: usa la experiencia como libro de aperturas.
 - `Experience Book Width`: número de movimientos principales a considerar (1–20).
