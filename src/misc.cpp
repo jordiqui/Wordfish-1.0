@@ -32,6 +32,9 @@
 #ifndef ENGINE_BUILD_DATE
 #define ENGINE_BUILD_DATE __DATE__
 #endif
+#ifndef ENGINE_NAME
+#define ENGINE_NAME "Wordfish 1.0.1 dev"
+#endif
 
 namespace Stockfish {
 
@@ -113,7 +116,7 @@ class Logger {
 
 // Returns the full name of the current Wordfish version.
 std::string engine_version_info() {
-    return std::string("Wordfish 1.0.1 dev ") + version.data();
+    return std::string(ENGINE_NAME) + " " + version.data();
 }
 
 // Update author information

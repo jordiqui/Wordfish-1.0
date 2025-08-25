@@ -39,9 +39,9 @@ endif
 
 ### Executable name
 ifeq ($(target_windows),yes)
-        EXE = revolution.exe
+EXE = wordfish.exe
 else
-        EXE = revolution
+EXE = wordfish
 endif
 
 ### Installation dir definitions
