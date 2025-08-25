@@ -1054,6 +1054,12 @@ moves_loop:  // When in check, search starts here
 
         Depth r = reduction(improving, depth, moveCount, delta);
 
+        // Don't over-reduce moves that give check. Checking moves often have
+        // high tactical significance, so we allow them slightly more search
+        // depth by decreasing the late move reduction.
+        if (givesCheck)
+            r = std::max<Depth>(0, r - 512);
+
         // Increase reduction for ttPv nodes (*Scaler)
         // Smaller or even negative value is better for short time controls
         // Bigger value is better for long time controls
