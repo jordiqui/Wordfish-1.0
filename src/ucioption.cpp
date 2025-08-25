@@ -1,5 +1,5 @@
 /*
-  Revolution, a UCI chess engine based on Stockfish, Berserk, and Obsidian
+  Wordfish, a UCI chess engine based on Stockfish, Berserk, and Obsidian
   Copyright (C) 2024 Jorge Ruiz Centelles
 
   This program is free software: you can redistribute it and/or modify
@@ -13,10 +13,10 @@
 #include "ucioption.h"
 // --- Engine identity (fallbacks; Makefile can override) ---
 #ifndef ENGINE_NAME
-#define ENGINE_NAME "Revolution 1.0 dev"
+#define ENGINE_NAME "Wordfish 1.0.1 dev"
 #endif
 #ifndef ENGINE_BUILD_DATE
-#define ENGINE_BUILD_DATE "120825"  // yymmdd; overridden by Makefile if provided
+#define ENGINE_BUILD_DATE __DATE__  // overridden by Makefile if provided
 #endif
 
 
