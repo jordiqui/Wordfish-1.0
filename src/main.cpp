@@ -1,5 +1,5 @@
 /*
-  Revolution, a UCI chess engine based on Stockfish, Berserk, and Obsidian
+  Wordfish, a UCI chess engine based on Stockfish, Berserk, and Obsidian
   Copyright (C) 2024 Jorge Ruiz Centelles
 
   This program is free software: you can redistribute it and/or modify
@@ -18,13 +18,13 @@
 #include "position.h"
 
 #ifndef ENGINE_BUILD_DATE
-// yymmdd; override at build time with:  -DENGINE_BUILD_DATE=250822
-#define ENGINE_BUILD_DATE "120825"
+// Fallback to compilation date if not provided by the build system
+#define ENGINE_BUILD_DATE __DATE__
 #endif
 
 #ifndef ENGINE_NAME
-// override at build time with:  -DENGINE_NAME="\"Revolution 1.0 dev\""
-#define ENGINE_NAME "Revolution 1.0 dev"
+// Override at build time with:  -DENGINE_NAME="\"Wordfish 1.0.1 dev\""
+#define ENGINE_NAME "Wordfish 1.0.1 dev"
 #endif
 
 using namespace Stockfish;
@@ -32,8 +32,7 @@ using namespace Stockfish;
 int main(int argc, char* argv[]) {
 
     // Clear, consistent banner (many GUIs echo this to their logs)
-    std::cout << ENGINE_NAME << ' ' << ENGINE_BUILD_DATE
-              << ' ' << __DATE__ << ' ' << __TIME__
+    std::cout << ENGINE_NAME << ' ' << ENGINE_BUILD_DATE << ' ' << __TIME__
               << " by Jorge Ruiz Centelles" << std::endl;
 
     std::cout << compiler_info() << std::endl;
